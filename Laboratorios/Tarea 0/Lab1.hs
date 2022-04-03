@@ -1,5 +1,7 @@
 module Lab1 where
 
+-- Federico Alonso 182999
+
 type M = [(String, Integer)]
 
 leer :: M -> String -> Integer
@@ -8,6 +10,7 @@ leer (m:ms) x
     | ((fst m) == x) = snd m 
     | otherwise = leer ms x
 -- leer [("x", 3), ("y", 5)] "x"
+-- leer [("x", 3), ("y", 5)] "z"
 
 escribir :: M -> String -> Integer -> M
 escribir [] c v = [(c, v)]
@@ -23,7 +26,7 @@ escribir (m:ms) c v
 
 data E = L Integer
     | V String
-    | String := E -- Se define asi? no me deja poniendo V, me repercute luego en asignacion
+    | String := E
     | E :- E 
     | E :+ E
     | E :* E
@@ -58,7 +61,7 @@ eval m (e1 :- e2) = (fst (eval (fst (eval m e1)) e2), (snd (eval m e1)) - (snd (
 -- Ejemplos
 -- eval [] (L 4 :- L 3)
 -- eval [("x", 5), ("y", 3), ("z", 4)] (L 4 :- V "z")
--- ???? eval [("x", 5), ("y", 3), ("z", 4)] (L 4 :- ("z" := L 3)) -- En este caso se toma el numero resultante???????
+-- eval [("x", 5), ("y", 3), ("z", 4)] (L 4 :- ("z" := L 3)) -- En este caso la asignación toma como resultado lo asignado
 
 eval m (e1 :+ e2) = (fst (eval (fst (eval m e1)) e2), (snd (eval m e1)) + (snd (eval (fst (eval m e1)) e2)))
 eval m (e1 :* e2) = (fst (eval (fst (eval m e1)) e2), (snd (eval m e1)) * (snd (eval (fst (eval m e1)) e2)))
@@ -84,8 +87,24 @@ eval m (e1 :% e2) = (fst (eval (fst (eval m e1)) e2), mod (snd (eval m e1)) (snd
 -- eval [("x", 1)] (("x" := L 100) :+ ("y" := (V "x" :+ V "x")))-> resultado ([("x",100),("y",200)],300)
 
 
--- El orden de la cuarta regla si importa, ejemplo: no es conmutativa
--- primero e1 nos muestra, puede cambiar la memoria, y luego evalua en la segunda que tambien puede cambiar la memoria
--- usar div y mod, no / y %
--- el dos da error
--- division entre cero?
+{-
+EJERCICIO 1
+
+    1. Analice la cuarta y  ́ultima regla: ¿Qué puede decir acerca del orden de evaluación? ¿Importa?
+
+    En el caso de la última regla tenemos que el orden efectivamente importa, la misma no es conmutativa. 
+    Si en la operación tenemos alguna asignación en uno de los lados del evaluador, entonces el resultado no será el mismo si se cambia el orden de las expresiones, ejemploÑ
+
+    Caso 1:
+
+    eval [("x", 1)] (("x" := L 100) :+ (V "x" :+ V "x"))
+
+    100 + (100 + 100) = 300
+
+    Caso 2:
+
+    eval [("x", 1)] ((V "x" :+ V "x") :+ ("x" := L 100))
+
+    (1 + 1) + 100 = 202
+
+}
