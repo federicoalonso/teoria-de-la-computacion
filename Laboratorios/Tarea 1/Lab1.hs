@@ -13,13 +13,16 @@ data E = X String
 
 type Sigma = [(String,E)]
 
--- buscar :: String -> Sigma -> E
--- buscar x [] = error "No se encuentra el valor."
--- buscar x (m:ms)
---     | ((fst m) == x) = snd m 
---     | otherwise = buscar ms x
+buscar :: String -> Sigma -> E
+buscar x [] = error "No se encuentra el valor."
+buscar x (m:ms)
+    | ((fst m) == x) = snd m 
+    | otherwise = buscar x ms
+-- buscar "x" [("x",X "x")]
 
-sust :: E -> Sigma -> Maybe E
-sust (X x) sig = lookup x sig
+
+sust :: E -> Sigma -> E
+sust (X x) s = buscar x s
+-- sust (X x) sig = lookup x sig
 
 -- sust (X "x") [("x", C "0")]
