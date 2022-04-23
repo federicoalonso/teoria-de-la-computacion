@@ -143,10 +143,6 @@ module Lab2 where
             ("[]",([],X "l2")),
             (":",(["x", "xs"],App (C ":") [X "x", App (X "unir") [X "xs", X "l2"]]))
         ]))
-    -- reducir (eval (App unirChi [(C "[]"),(C "[]")])) = C "[]"
-    -- reducir (eval (App unirChi [(App (C ":") [C "1", C "[]"]),(C "[]")])) = App (C ":") [C "1",C "[]"]
-    -- reducir (eval (App unirChi [(App (C ":") [C "1", C "[]"]),(App (C ":") [C "1", C "[]"])])) = App (C ":") [C "1",App (C ":") [C "1",C "[]"]]
-    
 
     reducir :: E -> E
     reducir (App e es) = case es of {
@@ -158,3 +154,91 @@ module Lab2 where
     reducir (Lam xs e) = Lam xs (reducir e)
     reducir (Case e bs) = Case (reducir e) (map (\(x,(xs,e)) -> (x,(xs,reducir e))) bs)
     reducir (Rec x e) = Rec x (reducir e)
+
+    unir :: E -> E
+    unir e = reducir(e)
+    -- unir (eval (App unirChi [(C "[]"),(C "[]")])) = C "[]"
+    -- unir (eval (App unirChi [(App (C ":") [C "1", C "[]"]),(C "[]")])) = App (C ":") [C "1",C "[]"]
+    -- unir (eval (App unirChi [(App (C ":") [C "1", C "[]"]),(App (C ":") [C "1", C "[]"])])) = App (C ":") [C "1",App (C ":") [C "1",C "[]"]]
+    
+    cero :: E
+    cero = C "0"
+
+    uno :: E
+    uno = App (C "S") [cero]
+
+    dos :: E
+    dos = App (C "S") [uno]
+
+    tres :: E
+    tres = App (C "S") [dos]
+
+    lista01 :: E
+    lista01 = App (C ":") [cero, App (C ":") [uno, C "[]"]]
+
+    lista23 :: E
+    lista23 = App (C ":") [dos, App (C ":") [tres, C "[]"]]
+    -- unir (eval (App unirChi [lista01, lista23])) = App (C ":") [C "0",App (C ":") [App (C "S") [C "0"],App (C ":") [App (C "S") [App (C "S") [C "0"]],App (C ":") [App (C "S") [App (C "S") [App (C "S") [C "0"]]],C "[]"]]]]
+
+    ramaIChi :: E
+    ramaIChi = Rec "ramaI" (
+            Lam ["a"] (
+                Case (X "a") [
+                    ("H", ([], C "[]")),
+                    ("N", (["v", "i", "d"], (App (C ":") [X "v", (App (X "ramaI") [X "i"])])))
+                ]
+            )
+        )
+    
+    ramaI :: E -> E
+    ramaI e = reducir(e)
+    
+    hoja :: E
+    hoja = App (C "H") []
+    -- ramaI (eval (App ramaIChi [hoja])) = C "[]"
+
+    arbol1 :: E
+    arbol1 = App (C "N") [cero, hoja, hoja]
+    -- ramaI (eval (App ramaIChi [arbol1])) = App (C ":") [C "0",C "[]"]
+ 
+    arbol2 :: E
+    arbol2 = App (C "N") [cero, arbol1, arbol1]
+    -- ramaI (eval (App ramaIChi [arbol2])) = App (C ":") [C "0",App (C ":") [C "0",C "[]"]]
+
+    arbol3 :: E
+    arbol3 = App (C "N") [cero, arbol2, hoja]
+    -- ramaI (eval (App ramaIChi [arbol3])) = App (C ":") [C "0",App (C ":") [C "0",App (C ":") [C "0",C "[]"]]]
+
+    arbol31 :: E
+    arbol31 = App (C "N") [uno, arbol2, arbol1]
+    -- ramaI (eval (App ramaIChi [arbol31])) = App (C ":") [App (C "S") [C "0"],App (C ":") [C "0",App (C ":") [C "0",C "[]"]]]
+
+    arbol33 :: E
+    arbol33 = App (C "N") [tres, arbol1, arbol2]
+    -- ramaI (eval (App ramaIChi [arbol33])) = App (C ":") [App (C "S") [App (C "S") [App (C "S") [C "0"]]],App (C ":") [C "0",C "[]"]]
+
+    -- #############################################################################
+    -- ############################### CASOS FINALES ###############################
+    -- #############################################################################
+
+    eTrue :: E
+    eTrue = C "True"
+
+    eFalse :: E
+    eFalse = C "False"
+
+    -- eval (App elAnd [eTrue,eTrue,eFalse]) = Error: Cantidad de argumentos incorrecta. - Func eval App e es.
+
+    notMal :: E
+    notMal = Lam ["x"] (Case (X "y") [
+            ("True",([], C "False")),
+            ("False",([], C "True"))
+        ])
+    -- eval (App notMal [eTrue]) = Error: No se puede aplicar con otra expresion. - Func eval Case e bs. - Primer case.
+
+    lista13 :: E
+    lista13 = App (C ":") [uno, App (C ":") [tres, C "[]"]]
+
+    lista130 :: E
+    lista130 = App (C ":") [lista13, App (C ":") [cero, C "[]"]]
+    -- unir (eval (App unirChi [(lista130), eFalse])) = App (C ":") [App (C ":") [App (C "S") [C "0"],App (C ":") [App (C "S") [App (C "S") [App (C "S") [C "0"]]],C "[]"]],App (C ":") [C "0",C "False"]]
