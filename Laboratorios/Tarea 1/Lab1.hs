@@ -143,7 +143,10 @@ module Lab2 where
             ("[]",([],X "l2")),
             (":",(["x", "xs"],App (C ":") [X "x", App (X "unir") [X "xs", X "l2"]]))
         ]))
+    -- eval (App unirChi [(C "[]"),(C "[]")]) = App (C "[]") []
+    -- eval (App unirChi [(App (C ":") [C "1", C "[]"]),(C "[]")]) = App (C ":") [App (C "1") [],App (C "[]") []]
 
+    -- La funcion reducir no es chi, pero nos ayuda a ver mejor las listas
     reducir :: E -> E
     reducir (App e es) = case es of {
         [] -> e;
@@ -189,7 +192,9 @@ module Lab2 where
                 ]
             )
         )
+    -- eval (App ramaIChi [arbol2]) = App (C ":") [App (C "0") [],App (C ":") [App (C "0") [],App (C "[]") []]]
     
+    -- Igual que la funcion reducir, esta nos ayuda a ver mejor las listas
     ramaI :: E -> E
     ramaI e = reducir(e)
     
